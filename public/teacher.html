@@ -1,87 +1,44 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Teacher Panel</title>
 <script src="/socket.io/socket.io.js"></script>
-</head>
-
-<body>
 
 <h2>💖 Teacher Control</h2>
 
-<textarea id="words" rows="12" cols="40">
-apple=사과
-banana=바나나
-orange=오렌지
-grape=포도
-peach=복숭아
-water=물
-milk=우유
-bread=빵
-rice=밥
-egg=달걀
-school=학교
-teacher=선생님
-student=학생
-book=책
-desk=책상
-chair=의자
-computer=컴퓨터
-phone=휴대폰
-friend=친구
-family=가족
-city=도시
-river=강
-mountain=산
-music=음악
-movie=영화
-game=게임
-food=음식
-animal=동물
-flower=꽃
-sun=태양
-</textarea>
+<textarea id="words" rows="12" cols="40"></textarea>
 
-<br><br>
+<br>
 
-게임 시간(초)
+게임시간
 <input id="time" value="180">
 
-<br><br>
+<br>
 
 <button onclick="setWords()">단어 설정</button>
-<button onclick="startGame()">게임 시작</button>
+<button onclick="start()">게임 시작</button>
+
+<div id="qr"></div>
 
 <script>
 
-const socket = io();
+const socket=io()
 
 function setWords(){
 
-const lines = document.getElementById("words").value.split("\\n");
+const lines=document.getElementById("words").value.split("\n")
 
-const list = lines.map(l=>{
-const [w,m] = l.split("=");
-return {word:w,meaning:m};
-});
+const list=lines.map(l=>{
+const [w,m]=l.split("=")
+return {word:w,meaning:m}
+})
 
-socket.emit("setWords",list);
-
-alert("단어 설정 완료");
+socket.emit("setWords",list)
 
 }
 
-function startGame(){
+function start(){
 
-const t = document.getElementById("time").value;
+const t=document.getElementById("time").value
 
-socket.emit("startGame",t);
-
-alert("게임 시작!");
+socket.emit("startGame",t)
 
 }
 
 </script>
-
-</body>
-</html>
