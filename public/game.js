@@ -1,85 +1,86 @@
-
 const socket=io()
 
-let name=""
+let id=null
 
-const emojis=["🎉","🌸","🐰","💖","🍓","⭐","🎀","✨","👏"]
+const emojis=["🎉","🌸","💖","🐰","✨","🍓","⭐"]
 
 function join(){
 
- name=document.getElementById("name").value || "student"
- socket.emit("join",name)
+const name=document.getElementById("name").value
+
+socket.emit("join",name)
+
+id=socket.id
 
 }
 
 socket.on("spawnWord",(w)=>{
 
- const el=document.createElement("div")
- el.className="word"
- el.innerText=w.word+" ⭐"+w.points
+const el=document.createElement("div")
+el.className="word"
 
- el.style.left=Math.random()*80+"%"
- el.style.top="60px"
+el.innerText=w.word+" ⭐"+w.points
 
- document.body.appendChild(el)
+el.style.left=Math.random()*80+"%"
+el.style.top="60px"
 
- let pos=60
+document.body.appendChild(el)
 
- const fall=setInterval(()=>{
+let pos=60
 
-  pos+=w.speed*2
-  el.style.top=pos+"px"
+const fall=setInterval(()=>{
 
-  if(pos>window.innerHeight){
+pos+=w.speed*2
+el.style.top=pos+"px"
 
-   el.remove()
-   clearInterval(fall)
+if(pos>window.innerHeight){
+clearInterval(fall)
+el.remove()
+}
 
-  }
-
- },50)
+},50)
 
 })
 
 document.getElementById("answer").addEventListener("keydown",(e)=>{
 
- if(e.key==="Enter"){
+if(e.key==="Enter"){
 
-  socket.emit("answer",{answer:e.target.value})
-  e.target.value=""
+socket.emit("answer",{
+answer:e.target.value,
+id:id
+})
 
- }
+e.target.value=""
+
+}
 
 })
 
-socket.on("wordSolved",(data)=>{
+socket.on("wordSolved",(d)=>{
 
- const em=emojis[Math.floor(Math.random()*emojis.length)]
+const e=emojis[Math.floor(Math.random()*emojis.length)]
 
- const msg=document.createElement("div")
- msg.className="emoji"
- msg.innerText=em+" "+data.player+" +"+data.points
+const msg=document.createElement("div")
 
- document.body.appendChild(msg)
+msg.innerText=e+" "+d.player+" +"+d.points
 
- setTimeout(()=>msg.remove(),2000)
+msg.style.position="fixed"
+msg.style.top="50%"
+msg.style.left="50%"
+msg.style.fontSize="30px"
+
+document.body.appendChild(msg)
+
+setTimeout(()=>msg.remove(),2000)
 
 })
 
 socket.on("players",(players)=>{
 
- const arr=Object.values(players).sort((a,b)=>b.score-a.score)
+const arr=Object.values(players).sort((a,b)=>b.score-a.score)
 
- document.getElementById("leaderboard").innerHTML=
- "🏆 LIVE RANK<br>"+arr.map((p,i)=>`${i+1}. ${p.name} ${p.score}`).join("<br>")
-
-})
-
-socket.on("gameEnd",(players)=>{
-
- const arr=Object.values(players).sort((a,b)=>b.score-a.score)
-
- alert("🏆 FINAL RANK\n"+
- arr.map((p,i)=>`${i+1}. ${p.name} ${p.score}`).join("\n"))
+document.getElementById("leaderboard").innerHTML=
+"🏆 LIVE RANK<br>"+arr.map((p,i)=>`${i+1}. ${p.name} ${p.score}`).join("<br>")
 
 })
