@@ -1,26 +1,54 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-<title>Word Rain PRO</title>
-<link rel="stylesheet" href="style.css">
-<script src="/socket.io/socket.io.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word Rain Ultimate</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="/socket.io/socket.io.js"></script>
 </head>
+<body class="student-page">
+  <div class="topbar">
+    <div class="brand">💖 Word Rain Ultimate</div>
+    <div class="status-wrap">
+      <div class="status-pill">👥 <span id="playerCount">0</span>명 접속</div>
+      <div class="status-pill">⏱ <span id="timer">0</span>초</div>
+      <div class="status-pill">📚 <span id="wordBankCount">0</span>개 단어</div>
+    </div>
+  </div>
 
-<body>
+  <aside class="leaderboard">
+    <h2>🏆 LIVE RANK</h2>
+    <div id="leaderboardList" class="leaderboard-list"></div>
+  </aside>
 
-<div id="leaderboard">🏆 LIVE RANK</div>
+  <main class="main-area">
+    <section class="join-card" id="joinCard">
+      <h1>🌸 반가워요!</h1>
+      <p>닉네임을 입력하고 게임에 들어오세요.</p>
+      <div class="join-row">
+        <input id="name" placeholder="닉네임 입력" maxlength="16" />
+        <button id="joinBtn">입장하기</button>
+      </div>
+      <p class="soft-text">개인정보 없이 닉네임만 사용합니다 💕</p>
+    </section>
 
-<h1>💖 WORD RAIN PRO 💖</h1>
+    <section class="answer-card" id="answerCard" style="display:none;">
+      <div class="answer-title">💌 뜻을 빠르게 입력하세요!</div>
+      <div class="answer-row">
+        <input id="answer" placeholder="한글 뜻 입력 후 Enter" autocomplete="off" />
+      </div>
+      <div id="myName" class="my-name"></div>
+      <div id="encourage" class="encourage">🌸 준비 완료!</div>
+    </section>
 
-<input id="name" placeholder="닉네임">
-<button onclick="join()">Join</button>
+    <section id="gameArea" class="game-area"></section>
+  </main>
 
-<br><br>
+  <div id="overlay" class="overlay hidden"></div>
+  <canvas id="fireworks"></canvas>
 
-<input id="answer" placeholder="뜻 입력">
-
-<script src="game.js"></script>
-
+  <script src="game.js"></script>
 </body>
 </html>

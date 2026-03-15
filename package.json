@@ -1,7 +1,7 @@
 {
-  "name": "word-rain-pro",
-  "version": "1.0.0",
-  "description": "Word Rain PRO Classroom Game",
+  "name": "word-rain-ultimate",
+  "version": "2.0.0",
+  "description": "Word Rain Ultimate classroom game",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

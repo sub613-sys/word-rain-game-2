@@ -1,44 +1,175 @@
-<script src="/socket.io/socket.io.js"></script>
 
-<h2>💖 Teacher Control</h2>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Control</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="teacher-page">
+  <div class="teacher-shell">
+    <div class="teacher-header">
+      <div>
+        <h1>💖 Teacher Control</h1>
+        <p class="soft-text">핑크 테마 수업용 Word Rain Ultimate</p>
+      </div>
+      <div class="teacher-stats">
+        <div class="stat-card">👥 접속 학생 <span id="playerCount">0</span>명</div>
+        <div class="stat-card">📚 단어 수 <span id="wordCount">0</span>개</div>
+        <div class="stat-card">⏱ 남은 시간 <span id="timer">0</span>초</div>
+      </div>
+    </div>
 
-<textarea id="words" rows="12" cols="40"></textarea>
+    <div class="teacher-grid">
+      <section class="panel">
+        <h2>📝 단어 입력</h2>
+        <p class="soft-text">형식: 영어=뜻</p>
+        <textarea id="words" rows="16">apple=사과
+banana=바나나
+orange=오렌지
+grape=포도
+peach=복숭아
+water=물
+milk=우유
+bread=빵
+rice=밥
+egg=달걀
+school=학교
+teacher=선생님
+student=학생
+book=책
+desk=책상
+chair=의자
+computer=컴퓨터
+phone=휴대폰
+friend=친구
+family=가족
+city=도시
+river=강
+mountain=산
+music=음악
+movie=영화
+game=게임
+food=음식
+animal=동물
+flower=꽃
+sun=태양</textarea>
 
-<br>
+        <div class="control-row">
+          <label>게임 시간(초)</label>
+          <input id="time" type="number" value="180" min="30" max="900" />
+        </div>
 
-게임시간
-<input id="time" value="180">
+        <div class="button-row">
+          <button id="setWordsBtn">단어 설정</button>
+          <button id="startBtn" class="strong-btn">게임 시작</button>
+          <button id="resetBtn" class="ghost-btn">초기화</button>
+        </div>
 
-<br>
+        <div id="teacherMessage" class="teacher-message">🌸 준비 중</div>
+      </section>
 
-<button onclick="setWords()">단어 설정</button>
-<button onclick="start()">게임 시작</button>
+      <section class="panel">
+        <h2>📱 학생 접속 QR</h2>
+        <p class="soft-text">학생용 주소를 QR로 바로 보여줄 수 있어요.</p>
+        <div id="qrBox" class="qr-box"></div>
+        <div class="url-box">
+          <input id="studentUrl" readonly />
+          <button id="copyBtn">링크 복사</button>
+        </div>
+      </section>
+    </div>
+  </div>
 
-<div id="qr"></div>
+  <script>
+    const socket = io();
+    const wordsEl = document.getElementById("words");
+    const timeEl = document.getElementById("time");
+    const playerCountEl = document.getElementById("playerCount");
+    const wordCountEl = document.getElementById("wordCount");
+    const timerEl = document.getElementById("timer");
+    const teacherMessageEl = document.getElementById("teacherMessage");
+    const studentUrlEl = document.getElementById("studentUrl");
 
-<script>
+    const studentUrl = window.location.origin + "/";
+    studentUrlEl.value = studentUrl;
 
-const socket=io()
+    new QRCode(document.getElementById("qrBox"), {
+      text: studentUrl,
+      width: 220,
+      height: 220
+    });
 
-function setWords(){
+    function parseWords() {
+      return wordsEl.value
+        .split("\\n")
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => {
+          const idx = line.indexOf("=");
+          if (idx === -1) return null;
+          return {
+            word: line.slice(0, idx).trim(),
+            meaning: line.slice(idx + 1).trim()
+          };
+        })
+        .filter(item => item && item.word && item.meaning);
+    }
 
-const lines=document.getElementById("words").value.split("\n")
+    document.getElementById("setWordsBtn").addEventListener("click", () => {
+      const list = parseWords();
+      socket.emit("setWords", list);
+    });
 
-const list=lines.map(l=>{
-const [w,m]=l.split("=")
-return {word:w,meaning:m}
-})
+    document.getElementById("startBtn").addEventListener("click", () => {
+      socket.emit("startGame", timeEl.value);
+    });
 
-socket.emit("setWords",list)
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      socket.emit("resetGame");
+    });
 
-}
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(studentUrl);
+        teacherMessageEl.textContent = "💖 학생 링크를 복사했어요!";
+      } catch {
+        teacherMessageEl.textContent = "복사가 안 되면 주소를 직접 복사해 주세요.";
+      }
+    });
 
-function start(){
+    socket.on("teacherMessage", (msg) => {
+      teacherMessageEl.textContent = msg;
+    });
 
-const t=document.getElementById("time").value
+    socket.on("playerCount", (count) => {
+      playerCountEl.textContent = count;
+    });
 
-socket.emit("startGame",t)
+    socket.on("wordBankCount", (count) => {
+      wordCountEl.textContent = count;
+    });
 
-}
+    socket.on("gameState", (state) => {
+      timerEl.textContent = state.remaining || 0;
+    });
 
-</script>
+    let tick = null;
+    socket.on("gameState", (state) => {
+      if (tick) clearInterval(tick);
+      let remain = state.remaining || 0;
+      timerEl.textContent = remain;
+      if (state.running) {
+        tick = setInterval(() => {
+          remain = Math.max(0, remain - 1);
+          timerEl.textContent = remain;
+          if (remain <= 0) clearInterval(tick);
+        }, 1000);
+      }
+    });
+  </script>
+</body>
+</html>
