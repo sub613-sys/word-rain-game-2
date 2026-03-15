@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -51,30 +50,34 @@ sun=태양
 <br><br>
 
 <button onclick="setWords()">단어 설정</button>
-<button onclick="start()">게임 시작</button>
+<button onclick="startGame()">게임 시작</button>
 
 <script>
 
-const socket=io()
+const socket = io();
 
 function setWords(){
 
-const lines=document.getElementById("words").value.split("\n")
+const lines = document.getElementById("words").value.split("\\n");
 
-const list=lines.map(l=>{
-const [w,m]=l.split("=")
-return {word:w,meaning:m}
-})
+const list = lines.map(l=>{
+const [w,m] = l.split("=");
+return {word:w,meaning:m};
+});
 
-socket.emit("setWords",list)
+socket.emit("setWords",list);
+
+alert("단어 설정 완료");
 
 }
 
-function start(){
+function startGame(){
 
-const t=document.getElementById("time").value
+const t = document.getElementById("time").value;
 
-socket.emit("startGame",t)
+socket.emit("startGame",t);
+
+alert("게임 시작!");
 
 }
 
