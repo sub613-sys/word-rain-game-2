@@ -104,20 +104,21 @@ sun=태양</textarea>
     });
 
     function parseWords() {
-      return wordsEl.value
-        .split("\\n")
-        .map(line => line.trim())
-        .filter(Boolean)
-        .map(line => {
-          const idx = line.indexOf("=");
-          if (idx === -1) return null;
-          return {
-            word: line.slice(0, idx).trim(),
-            meaning: line.slice(idx + 1).trim()
-          };
-        })
-        .filter(item => item && item.word && item.meaning);
-    }
+  return wordsEl.value
+    .split(/?
+/)
+    .map(line => line.trim())
+    .filter(Boolean)
+    .map(line => {
+      const idx = line.indexOf("=");
+      if (idx === -1) return null;
+      return {
+        word: line.slice(0, idx).trim(),
+        meaning: line.slice(idx + 1).trim()
+      };
+    })
+    .filter(item => item && item.word && item.meaning);
+}
 
     document.getElementById("setWordsBtn").addEventListener("click", () => {
       const list = parseWords();
